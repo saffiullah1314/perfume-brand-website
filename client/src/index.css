@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.container-custom {
+  @apply max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12;
+}
+.btn-primary {
+  @apply inline-flex items-center justify-center
+  bg-gold text-dark
+  font-body font-medium
+  px-8 py-3
+  rounded-full
+  transition-all duration-300
+  hover:bg-opacity-90 hover:scale-105;
+}
