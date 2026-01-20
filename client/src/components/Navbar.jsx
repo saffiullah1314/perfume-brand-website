@@ -2,9 +2,11 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../assets/logo.png";
-import { FiShoppingCart, FiMenu, FiX } from "react-icons/fi";
+import { FiShoppingCart, FiMenu, FiX, FiUser } from "react-icons/fi";
+import AuthModal from "./AuthModal";
 
 function Navbar() {
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -37,6 +39,15 @@ function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-4">
+            {/* Profile Icon (New) */}
+            <button
+              onClick={() => setIsAuthOpen(true)} // Modal kholne ke liye
+              className="text-gold hover:text-lightText transition text-2xl"
+            >
+              <FiUser />
+            </button>
+
+            {/* Cart Icon */}
             <NavLink
               to="/cart"
               className="text-gold hover:text-lightText transition text-2xl"
@@ -44,7 +55,7 @@ function Navbar() {
               <FiShoppingCart />
             </NavLink>
 
-            {/* Hamburger Button */}
+            {/* Hamburger Button (Mobile Only) */}
             <button
               onClick={toggleMenu}
               className="text-gold text-3xl md:hidden z-[110] relative"
@@ -81,6 +92,7 @@ function Navbar() {
           </>
         )}
       </AnimatePresence>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </motion.header>
   );
 }
