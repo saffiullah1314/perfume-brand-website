@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import perfumes from "../data/perfumes";
 import ProductCard from "../components/ProductCard";
@@ -38,43 +37,22 @@ export default function Shop() {
           {perfumes.map((item) => (
             <ProductCard key={item.id} product={item} />
           ))}
-        </div>
-        {/* Footer Context for Upcoming Products */}
-        <div className="mt-32 text-center border-t border-gold/10 pt-16">
-          {/* Editorial Coming Soon Section */}
+
+          {/* Luxury Coming Soon Card */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-40 pt-20 border-t border-gold/10 text-center space-y-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="border border-dashed border-black rounded-[2rem] flex flex-col items-center justify-center p-12 text-center bg-gold/[0.02] min-h-[400px]"
           >
-            <div className="flex justify-center items-center gap-4 mb-2">
-              <div className="h-[1px] w-12 bg-gold/30"></div>
-              <span className="text-[10px] uppercase tracking-[0.6em] text-gold font-bold">
-                The Future of Roohra
-              </span>
-              <div className="h-[1px] w-12 bg-gold/30"></div>
+            <div className="w-16 h-16 mb-6 rounded-full border border-black flex items-center justify-center">
+              <div className="w-2 h-2 bg-black rounded-full animate-pulse" />
             </div>
-
-            {/* Updated Heading with Easy and Unique English */}
-            <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl text-grey/40 italic leading-tight">
-              More signature scents <br className="hidden md:block" />
-              are on the{" "}
-              <span className="text-gold/40 underline decoration-gold/20 underline-offset-8">
-                way.
-              </span>
-            </h2>
-
-            <p className="text-[#636363]/50 text-xs md:text-sm font-light tracking-[0.1em] max-w-lg mx-auto leading-relaxed">
-              Our artisans are currently blending new masterpieces in our
-              private library. Something unique is coming to your collection
-              soon.
+            <h3 className="font-serif text-2xl text-grey/80 italic mb-2">
+              Coming Soon...
+            </h3>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gold font-bold max-w-[150px]">
+              Our artisans are blending new masterpieces.
             </p>
-
-            {/* Elegant Divider Line */}
-            <div className="pt-4">
-              <div className="w-1 h-12 bg-gradient-to-b from-gold/40 to-transparent mx-auto"></div>
-            </div>
           </motion.div>
         </div>
       </div>
