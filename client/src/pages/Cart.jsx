@@ -3,6 +3,7 @@ import { useCart } from "../context/CartContext";
 import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import GoldButton from "../components/GoldButton";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const {
@@ -12,6 +13,7 @@ export default function Cart() {
     subtotal,
     deliveryCharges,
   } = useCart();
+  const navigate = useNavigate();
 
   if (cartItems.length === 0) {
     return (
@@ -149,7 +151,7 @@ export default function Cart() {
           </div>
 
           {/* RIGHT: SUMMARY (STICKY) */}
-          <div className="w-full lg:w-[35%] bg-white rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-xl border-2 border-gold/20 lg:sticky lg:top-32">
+          <div className="w-full lg:w-[35%] bg-gold/30 rounded-1xl md:rounded-2xl p-6 md:p-10 shadow-xl border-2 border-gold/20 lg:sticky lg:top-32">
             <h2 className="font-serif text-2xl md:text-3xl text-grey mb-6">
               Summary
             </h2>
@@ -179,7 +181,10 @@ export default function Cart() {
             </div>
 
             <div className="pt-6">
-              <GoldButton className="w-full !py-3 md:!py-3.5 !text-[10px] md:!text-xs uppercase tracking-widest flex items-center justify-center">
+              <GoldButton
+                onClick={() => navigate("/order")}
+                className="w-full !py-3 md:!py-3.5 !text-[10px] md:!text-xs uppercase tracking-widest flex items-center justify-center bg-white"
+              >
                 Proceed to Checkout
               </GoldButton>
             </div>

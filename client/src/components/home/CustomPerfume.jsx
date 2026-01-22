@@ -47,7 +47,7 @@ export default function CustomPerfume() {
           {/* Main Heading */}
           <motion.h2
             variants={itemVariants}
-            className="font-serif text-2xl md:text-5xl lg:text-6xl text-gold mb-4 md:mb-6 tracking-tight"
+            className="font-serif text-3xl md:text-5xl lg:text-6xl text-gold mb-4 md:mb-6 tracking-tight"
           >
             Create Your Own <br />
             <span className="italic font-light text-white text-3xl md:text-6xl">
@@ -58,7 +58,7 @@ export default function CustomPerfume() {
           {/* Body Content */}
           <motion.p
             variants={itemVariants}
-            className="font-body text-lightText text-xs md:text-lg leading-relaxed max-w-xs md:max-w-2xl mx-auto mb-8 md:mb-10 opacity-80"
+            className="font-body text-lightText text-s md:text-lg leading-relaxed max-w-xs md:max-w-2xl mx-auto mb-8 md:mb-10 opacity-80"
           >
             Experience the art of bespoke perfumery. Collaborate with our master
             blenders to design a fragrance that is uniquely yours. From

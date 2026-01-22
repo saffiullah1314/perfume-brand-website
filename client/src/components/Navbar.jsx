@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { HashLink } from "react-router-hash-link"; // Iska sahi use yahan hoga
+import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../assets/logo.png";
 import { FiShoppingCart, FiMenu, FiX, FiUser } from "react-icons/fi";
@@ -14,7 +15,6 @@ function Navbar() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  // Animation variants for the Desktop Navbar on Load
   const navVariants = {
     hidden: { opacity: 1 },
     visible: {
@@ -28,12 +28,18 @@ function Navbar() {
       initial="hidden"
       animate="visible"
       variants={navVariants}
-      className="bg-grey sticky top-0 z-[100] w-full"
+      className="bg-grey sticky top-0 z-[100] w-full shadow-lg"
     >
       <div className="container-custom">
         <div className="flex items-center justify-between py-1 md:py-2">
           {/* Logo */}
-          <img src={logo} alt="Perfume Brand Logo" className="h-12 w-auto" />
+          <NavLink to="/">
+            <img
+              src={logo}
+              alt="Perfume Brand Logo"
+              className="h-12 w-auto cursor-pointer"
+            />
+          </NavLink>
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8 font-body text-gold text-lg">
@@ -42,25 +48,22 @@ function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-4">
-            {/* Profile Icon (New) */}
             <button
-              onClick={() => setIsAuthOpen(true)} // Modal kholne ke liye
+              onClick={() => setIsAuthOpen(true)}
               className="text-gold hover:text-lightText transition text-2xl"
             >
               <FiUser />
             </button>
 
-            {/* Cart Icon */}
             <NavLink to="/cart" className="relative text-gold text-2xl">
               <FiShoppingCart />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-bounce font-bold">
                   {totalItems}
                 </span>
               )}
             </NavLink>
 
-            {/* Hamburger Button (Mobile Only) */}
             <button
               onClick={toggleMenu}
               className="text-gold text-3xl md:hidden z-[110] relative"
@@ -71,11 +74,10 @@ function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay & Panel */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* 1. Dark Blurred Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -83,8 +85,6 @@ function Navbar() {
               onClick={toggleMenu}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] md:hidden"
             />
-
-            {/* 2. Right-side Small Menu Panel */}
             <motion.nav
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -103,38 +103,51 @@ function Navbar() {
 }
 
 function NavLinks({ onClick }) {
+  const location = useLocation();
+
   const links = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     { name: "Custom Perfume", path: "/custom-perfume" },
     { name: "Track Order", path: "/track-order" },
-    { name: "Contact", path: "#contact-section" }, // Updated path to the ID
+    { name: "Contact", path: "/#contact" },
   ];
 
   return (
     <>
       {links.map((link) => {
-        // Check if it's the Contact link to use an anchor tag
+        // Agar Contact link hai toh HashLink use karein
         if (link.name === "Contact") {
           return (
-            <a
+            <HashLink
+              smooth
               key={link.name}
-              href={link.path}
+              to={link.path}
+              // Yeh function ensure karega ke element milte hi scroll ho
+              scroll={(el) =>
+                el.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
               onClick={onClick}
-              className="relative w-fit hover:text-lightText transition-colors duration-300 border-b-2 border-transparent hover:border-gold pb-1 md:pb-0 cursor-pointer"
+              className="relative w-fit hover:text-lightText transition-colors duration-300 border-b-2 border-transparent hover:border-gold pb-1 md:pb-0"
             >
               {link.name}
-            </a>
+            </HashLink>
           );
         }
 
-        // Standard NavLink for other pages
+        // Baki sab ke liye standard NavLink
         return (
           <NavLink
             key={link.path}
             to={link.path}
             onClick={onClick}
-            className="relative w-fit hover:text-lightText transition-colors duration-300 border-b-2 border-transparent hover:border-gold pb-1 md:pb-0"
+            className={({ isActive }) =>
+              `relative w-fit transition-colors duration-300 border-b-2 pb-1 md:pb-0 ${
+                isActive
+                  ? "text-lightText border-gold"
+                  : "text-gold border-transparent hover:text-lightText hover:border-gold"
+              }`
+            }
           >
             {link.name}
           </NavLink>

@@ -4,6 +4,7 @@ import WhyChooseUs from "../components/home/WhyChooseUs";
 import CustomPerfume from "../components/home/CustomPerfume";
 import Aboutus from "../components/home/AboutUs";
 import ContactUS from "../components/home/ContactUS";
+import { HashLink } from "react-router-hash-link";
 
 function Home() {
   return (
@@ -13,7 +14,9 @@ function Home() {
       <CustomPerfume />
       <WhyChooseUs />
       <Aboutus />
-      <ContactUS />
+      <HashLink smooth to="/#contact">
+        <ContactUS />
+      </HashLink>
     </>
   );
 }

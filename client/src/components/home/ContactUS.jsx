@@ -52,7 +52,7 @@ export default function ContactUs() {
 
   return (
     <section
-      id="contact-section"
+      id="contact"
       className="bg-[#FBFBF9] py-16 md:py-24 px-6 md:px-12 lg:px-24 font-body"
     >
       <div className="container-custom max-w-7xl mx-auto">

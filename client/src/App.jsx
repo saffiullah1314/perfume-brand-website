@@ -9,6 +9,9 @@ import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
+import ProductDetail from "./pages/ProductDetail";
+import PlaceOrder from "./pages/PlaceOrder";
+import Success from "./pages/Success";
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
           <Route path="/track-order" element={<TrackOrder />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/order" element={<PlaceOrder />} />
+          <Route path="/success" element={<Success />} />
         </Routes>
       </MainLayout>
     </CartProvider>

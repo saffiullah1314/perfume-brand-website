@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import backgroundImage from "../../assets/hero.jpg";
-// 1. Import your new reusable GoldButton component
 import GoldButton from "../GoldButton";
 
 export default function Hero() {
@@ -25,13 +24,14 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative h-[90vh] md:h-screen w-full overflow-hidden flex items-end pb-48">
+    <section className="relative h-screen w-full overflow-hidden flex items-center md:items-end md:pb-32">
       {/* Background Image Container */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-50"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-[0.65] md:brightness-75"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/90 via-black/40 to-transparent" />
+        {/* Gradient Overlay - Mobile par thora dark rakha hai taake text nazar aaye */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent md:bg-gradient-to-tr" />
       </div>
 
       <div className="container-custom relative z-10 px-6 md:px-16 w-full">
@@ -39,29 +39,34 @@ export default function Hero() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-xl text-left"
+          className="max-w-2xl text-left" /* Content start se align hai */
         >
+          {/* H1: Mobile par size barha diya (text-4xl) */}
           <motion.h1
             variants={itemVariants}
-            className="font-serif text-2xl md:text-4xl text-lightText leading-tight tracking-wide"
+            className="font-serif text-3xl md:text-5xl  text-lightText leading-[1.1] tracking-tight"
           >
             The Essence of <br />
-            <span className="font-bold text-3xl text text-gold md:text-5xl">
+            <span className="font-bold text-4xl md:text-6xl text-gold mt-2 block">
               Timeless Elegance
             </span>
           </motion.h1>
 
+          {/* Paragraph: Mobile par readability behtar ki */}
           <motion.p
             variants={itemVariants}
-            className="font-body text-lightText text-sm md:text-base mt-4 max-w-xs md:max-w-md leading-relaxed opacity-80"
+            className="font-body text-lightText text-lg md:text-xl mt-6 max-w-sm md:max-w-md leading-relaxed opacity-90"
           >
             Hand crafted in Pakistan using premium oils sourced globally.
-            Fragrances that linger long after you leave the room.
+            Fragrances that linger long after you leave.
           </motion.p>
 
-          <motion.div variants={itemVariants} className="mt-8">
-            {/* 2. Using the imported GoldButton with the shop navigation */}
-            <GoldButton onClick={() => navigate("/shop")}>
+          <motion.div variants={itemVariants} className="mt-10">
+            {/* Button: Mobile par padding aur text barha diya */}
+            <GoldButton
+              onClick={() => navigate("/shop")}
+              className="!px-12 !py-5 !text-[12px] md:!text-[12px] tracking-[0.3em]"
+            >
               Shop the Collection
             </GoldButton>
           </motion.div>

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AiFillStar } from "react-icons/ai"; // Star icon
+import { AiFillStar } from "react-icons/ai";
 import perfumes from "../../data/perfumes";
 
 export default function FeaturedPerfumes() {
@@ -8,19 +8,21 @@ export default function FeaturedPerfumes() {
 
   return (
     <section className="bg-[#F9F7F2] py-16 md:py-24">
-      <div className="container-custom">
+      <div className="container-custom px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-10 md:mb-16"
         >
-          <h2 className="font-serif text-3xl md:text-4xl text-grey tracking-wide">
+          <h2 className="font-serif text-2xl md:text-4xl text-grey tracking-wide uppercase">
             Curated Masterpieces
           </h2>
+          <div className="h-1 w-20 bg-gold mx-auto mt-4"></div>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6">
+        {/* Responsive Grid: grid-cols-2 for mobile, grid-cols-4 for desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {featuredList.map((perfume) => (
             <PerfumeCard key={perfume.id} perfume={perfume} />
           ))}
@@ -33,19 +35,17 @@ export default function FeaturedPerfumes() {
 function PerfumeCard({ perfume }) {
   const navigate = useNavigate();
 
-  // Logic to calculate discounted price
   const hasDiscount = perfume.discount > 0;
   const discountedPrice = hasDiscount
     ? perfume.price - perfume.price * (perfume.discount / 100)
     : perfume.price;
 
-  // Rating Stars Logic
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       <AiFillStar
         key={index}
         className={index < rating ? "text-orange-400" : "text-gray-300"}
-        size={14}
+        size={10} // Mobile par chota size taake line break na ho
       />
     ));
   };
@@ -54,17 +54,17 @@ function PerfumeCard({ perfume }) {
     <motion.div
       whileHover={{ y: -10 }}
       onClick={() => navigate(`/product/${perfume.id}`)}
-      className="bg-white p-5 shadow-sm cursor-pointer flex flex-col items-center text-center group relative overflow-hidden transition-all hover:shadow-2xl rounded-lg"
+      className="bg-white p-3 md:p-5 shadow-sm cursor-pointer flex flex-col items-center text-center group relative overflow-hidden transition-all hover:shadow-2xl rounded-xl border border-gold/5"
     >
-      {/* Discount Badge */}
+      {/* Discount Badge - Smaller on mobile */}
       {hasDiscount && (
-        <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10">
-          {perfume.discount}% OFF
+        <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-red-500 text-white text-[8px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded-md z-10 uppercase">
+          {perfume.discount}%
         </div>
       )}
 
       {/* Image Container */}
-      <div className="w-full aspect-[4/5] overflow-hidden rounded-2xl mb-5 bg-[#1A1A1A]">
+      <div className="w-full aspect-[4/5] overflow-hidden rounded-lg md:rounded-2xl mb-3 md:mb-5 bg-[#1A1A1A]">
         <motion.img
           src={perfume.images[0]}
           alt={perfume.name}
@@ -72,34 +72,36 @@ function PerfumeCard({ perfume }) {
         />
       </div>
 
-      {/* Product Info */}
-      <h3 className="font-body font-bold text-grey text-md uppercase tracking-widest mb-1">
+      {/* Product Info - Sizes adjusted for 2-column layout */}
+      <h3 className="font-body font-bold text-grey text-[10px] md:text-sm uppercase tracking-widest mb-1 truncate w-full">
         {perfume.name}
       </h3>
 
-      {/* Ratings */}
-      <div className="flex gap-0.5 mb-3">{renderStars(perfume.rating)}</div>
+      <div className="flex gap-0.5 mb-2 md:mb-3">
+        {renderStars(perfume.rating)}
+      </div>
 
       {/* Price Section */}
-      <div className="mb-6">
+      <div className="mb-4 md:mb-6">
         {hasDiscount ? (
-          <div className="flex flex-col items-center">
-            <span className="text-red-500 line-through text-xs opacity-70">
-              Rs. {perfume.price.toLocaleString()}
+          <div className="flex flex-col items-center leading-tight">
+            <span className="text-red-500 line-through text-[10px] md:text-xs opacity-70">
+              Rs.{perfume.price}
             </span>
-            <span className="text-black font-bold text-lg">
-              Rs. {discountedPrice.toLocaleString()}
+            <span className="text-black font-black text-sm md:text-lg">
+              Rs.{Math.round(discountedPrice)}
             </span>
           </div>
         ) : (
-          <span className="text-black font-bold text-lg">
-            Rs. {perfume.price.toLocaleString()}
+          <span className="text-black font-black text-sm md:text-lg">
+            Rs.{perfume.price}
           </span>
         )}
       </div>
 
-      <button className="bg-grey text-white px-8 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-gold hover:text-grey">
-        View Details
+      {/* Button - Smaller on mobile */}
+      <button className="w-full md:w-auto bg-grey text-white px-3 md:px-8 py-2 md:py-2.5 rounded-full text-[9px] md:text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-gold hover:text-grey">
+        View
       </button>
     </motion.div>
   );
