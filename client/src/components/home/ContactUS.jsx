@@ -121,7 +121,7 @@ export default function ContactUs() {
           {/* Right Side: The Masterwork Form */}
           <motion.div
             variants={containerVariants}
-            className="bg-[#fffdf6] p-8 md:p-12 lg:p-14 rounded-[1.5rem] shadow-[0_30px_90px_rgba(0,0,0,0.04)] border border-gold flex flex-col justify-center"
+            className="bg-gold/30 p-8 md:p-12 lg:p-14 rounded-[1.5rem] shadow-[0_30px_90px_rgba(0,0,0,0.04)] border border-gold flex flex-col justify-center"
           >
             <form
               ref={form}

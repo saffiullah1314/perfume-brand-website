@@ -5,6 +5,7 @@ import {
   addProduct,
   listProducts,
   removeProduct,
+  updateProduct,
 } from "../controllers/productController.js";
 
 const productRouter = express.Router();
@@ -24,5 +25,16 @@ productRouter.post(
 
 productRouter.get("/list", listProducts);
 productRouter.post("/remove", adminAuth, removeProduct);
+productRouter.post(
+  "/update",
+  adminAuth,
+  upload.fields([
+    { name: "image1" },
+    { name: "image2" },
+    { name: "image3" },
+    { name: "image4" },
+  ]),
+  updateProduct,
+);
 
 export default productRouter;

@@ -1,10 +1,36 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
-const CartContext = createContext();
+export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const deliveryCharges = 150; // Jaisa aapne kaha, dynamically set kar diya
+  const [products, setProducts] = useState([]); // Database Products
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const deliveryCharges = 150;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  // --- Fetch Products from Backend ---
+  const getProductsData = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/product/list`);
+      if (response.data.success) {
+        // Mapping backend keys to match your frontend logic
+        const formatted = response.data.products.map((item) => ({
+          ...item,
+          id: item._id, // Taake link (/product/id) na tootay
+          images: item.image, // Backend 'image' array ko 'images' mein convert kiya
+        }));
+        setProducts(formatted);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  useEffect(() => {
+    getProductsData();
+  }, []);
 
   // Add to Cart Logic
   const addToCart = (product) => {
@@ -21,7 +47,6 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // Update Quantity
   const updateQuantity = (id, amount) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
@@ -32,12 +57,10 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // Remove Item
   const removeFromCart = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
   };
 
-  // Totals Calculation
   const subtotal = cartItems.reduce((acc, item) => {
     const price = item.discount
       ? item.price - (item.price * item.discount) / 100
@@ -49,11 +72,16 @@ export const CartProvider = ({ children }) => {
     <CartContext.Provider
       value={{
         cartItems,
+        setCartItems,
+        products,
         addToCart,
         updateQuantity,
         removeFromCart,
         subtotal,
         deliveryCharges,
+        token,
+        setToken,
+        backendUrl,
       }}
     >
       {children}

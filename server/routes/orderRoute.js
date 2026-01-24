@@ -4,6 +4,8 @@ import {
   allOrders,
   userOrders,
   updateStatus,
+  orderStatus,
+  removeOrder,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -14,10 +16,12 @@ const orderRouter = express.Router();
 orderRouter.post("/list", adminAuth, allOrders);
 orderRouter.post("/status", adminAuth, updateStatus);
 
-// Payment Routes (COD)
+// User/Guest Routes
 orderRouter.post("/place", placeOrder);
-
-// User Features
 orderRouter.post("/userorders", authUser, userOrders);
+orderRouter.post("/remove", adminAuth, removeOrder);
+
+// Naya Track Route (Yeh Guest aur User dono ke liye hai)
+orderRouter.post("/track", orderStatus);
 
 export default orderRouter;

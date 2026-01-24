@@ -5,7 +5,6 @@ import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import CustomPerfume from "./pages/CustomPerfume";
 import TrackOrder from "./pages/TrackOrder";
-import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
@@ -23,7 +22,6 @@ function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/custom-perfume" element={<CustomPerfume />} />
           <Route path="/track-order" element={<TrackOrder />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/order" element={<PlaceOrder />} />

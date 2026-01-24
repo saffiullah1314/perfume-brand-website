@@ -6,26 +6,28 @@ const addProduct = async (req, res) => {
   try {
     const {
       name,
+      inspiredBy,
+      shortDescription,
       description,
       price,
+      discount,
+      rating,
       category,
       subCategory,
-      sizes,
+      size,
       bestSeller,
-      discount,
+      notes,
     } = req.body;
 
-    // Extracting images from request
+    // Image upload logic (Same as yours)
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
     const image4 = req.files.image4 && req.files.image4[0];
-
     const images = [image1, image2, image3, image4].filter(
       (item) => item !== undefined,
     );
 
-    // Uploading images to Cloudinary
     let imagesUrl = await Promise.all(
       images.map(async (item) => {
         let result = await cloudinary.uploader.upload(item.path, {
@@ -35,26 +37,28 @@ const addProduct = async (req, res) => {
       }),
     );
 
-    // Product data object
     const productData = {
       name,
+      inspiredBy,
+      shortDescription,
       description,
-      category,
       price: Number(price),
-      subCategory,
-      bestSeller: bestSeller === "true" ? true : false,
-      sizes: JSON.parse(sizes), // Frontend se array string ban kar aata hai
-      image: imagesUrl,
       discount: Number(discount),
+      rating: Number(rating),
+      category,
+      subCategory,
+      size,
+      bestSeller: bestSeller === "true" ? true : false,
+      image: imagesUrl,
+      // Frontend se notes JSON.stringify ho kar aayenge
+      notes: JSON.parse(notes),
       date: Date.now(),
     };
 
     const product = new productModel(productData);
     await product.save();
-
-    res.json({ success: true, message: "Product Added Successfully" });
+    res.json({ success: true, message: "Masterpiece Added Successfully" });
   } catch (error) {
-    console.log(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -78,5 +82,68 @@ const removeProduct = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+const updateProduct = async (req, res) => {
+  try {
+    const {
+      id,
+      name,
+      inspiredBy,
+      shortDescription,
+      description,
+      price,
+      category,
+      subCategory,
+      sizes,
+      bestSeller,
+      discount,
+      notes,
+      rating,
+      size,
+    } = req.body;
 
-export { addProduct, listProducts, removeProduct };
+    const updateData = {
+      name,
+      inspiredBy,
+      shortDescription,
+      description,
+      category,
+      subCategory,
+      bestSeller: bestSeller === "true",
+      price: Number(price),
+      discount: Number(discount),
+      rating: Number(rating),
+      size,
+      notes: JSON.parse(notes), // Notes object structure
+      date: Date.now(),
+    };
+
+    // Images handling (Agar admin nayi images upload kare)
+    const image1 = req.files?.image1 && req.files.image1[0];
+    const image2 = req.files?.image2 && req.files.image2[0];
+    const image3 = req.files?.image3 && req.files.image3[0];
+    const image4 = req.files?.image4 && req.files.image4[0];
+    const images = [image1, image2, image3, image4].filter(
+      (item) => item !== undefined,
+    );
+
+    if (images.length > 0) {
+      let imagesUrl = await Promise.all(
+        images.map(async (item) => {
+          let result = await cloudinary.uploader.upload(item.path, {
+            resource_type: "image",
+          });
+          return result.secure_url;
+        }),
+      );
+      updateData.image = imagesUrl;
+    }
+
+    await productModel.findByIdAndUpdate(id, updateData);
+    res.json({ success: true, message: "Masterpiece Updated Successfully" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Export mein updateProduct add karein
+export { addProduct, listProducts, removeProduct, updateProduct };

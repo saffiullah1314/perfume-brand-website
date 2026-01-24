@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { backendUrl } from "../App";
 import { toast } from "react-toastify";
@@ -9,12 +9,20 @@ import {
   IoCallOutline,
   IoWalletOutline,
   IoCalendarOutline,
+  IoTrashOutline,
+  IoCopyOutline,
 } from "react-icons/io5";
 
 const Orders = ({ token }) => {
   const [orders, setOrders] = useState([]);
+  const [orderCount, setOrderCount] = useState(0);
+  const audioPlayer = useRef(null);
 
-  const fetchAllOrders = async () => {
+  // Sound Notification URL (Aap apni pasand ki short mp3 file yahan daal sakte hain)
+  const notificationSound =
+    "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
+
+  const fetchAllOrders = async (isFirstLoad = false) => {
     if (!token) return null;
     try {
       const response = await axios.post(
@@ -23,10 +31,41 @@ const Orders = ({ token }) => {
         { headers: { token } },
       );
       if (response.data.success) {
-        setOrders(response.data.orders.reverse());
+        const fetchedOrders = response.data.orders.reverse();
+
+        // Agar naye orders aaye hain toh sound bajao (First load par nahi bajega)
+        if (!isFirstLoad && fetchedOrders.length > orderCount) {
+          audioPlayer.current
+            .play()
+            .catch((err) =>
+              console.log("Audio play blocked by browser settings."),
+            );
+          toast.info("New Order Received! 🔔");
+        }
+
+        setOrders(fetchedOrders);
+        setOrderCount(fetchedOrders.length);
       }
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    if (window.confirm("Confirm delete this order record?")) {
+      try {
+        const response = await axios.post(
+          backendUrl + "/api/order/remove",
+          { orderId },
+          { headers: { token } },
+        );
+        if (response.data.success) {
+          toast.success("Order Removed");
+          fetchAllOrders(true);
+        }
+      } catch (error) {
+        toast.error("Error deleting order");
+      }
     }
   };
 
@@ -38,8 +77,8 @@ const Orders = ({ token }) => {
         { headers: { token } },
       );
       if (response.data.success) {
-        await fetchAllOrders();
-        toast.success("Status Updated Successfully");
+        fetchAllOrders(true);
+        toast.success("Status Updated");
       }
     } catch (error) {
       toast.error(error.message);
@@ -47,133 +86,194 @@ const Orders = ({ token }) => {
   };
 
   useEffect(() => {
-    fetchAllOrders();
-  }, [token]);
+    fetchAllOrders(true); // Pehli baar load karte waqt sound nahi bajega
+
+    // Auto-refresh every 30 seconds to check for new orders
+    const interval = setInterval(() => {
+      fetchAllOrders(false);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [token, orderCount]);
 
   return (
-    <div className="animate-fade-in pb-20 px-2 sm:px-0">
-      <div className="flex flex-col gap-1 mb-8">
-        <h2 className="text-xl sm:text-2xl font-serif tracking-[0.2em] text-black uppercase">
-          Order Management
-        </h2>
-        <div className="h-[2px] w-12 bg-[#cbc3a3]"></div>
+    <div className="animate-fade-in pb-20 px-4">
+      {/* Hidden Audio Element */}
+      <audio ref={audioPlayer} src={notificationSound} />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+        <div>
+          <h2 className="text-3xl font-serif tracking-widest text-[#1A1A1A] uppercase font-bold">
+            Dispatch Center
+          </h2>
+          <div className="h-[3px] w-20 bg-[#C5A059] mt-1"></div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></span>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            Live Monitoring Active
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-10">
         {orders.map((order, index) => (
           <div
             key={index}
-            className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all"
+            className="bg-white border-2 border-gray-200 rounded-[1.5rem] overflow-hidden shadow-lg hover:border-[#C5A059] transition-all"
           >
-            {/* Order Header - Tracking & Date */}
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex flex-wrap justify-between items-center gap-2">
-              <div className="flex items-center gap-2">
-                <span className="bg-black text-white text-[10px] px-2 py-1 rounded font-bold uppercase tracking-widest">
-                  Order ID: {order._id.slice(-6)}
-                </span>
-                <div className="flex items-center gap-1 text-gray-500 text-xs">
-                  <IoCalendarOutline />
-                  <span>{new Date(order.date).toLocaleDateString()}</span>
+            {/* Header */}
+            <div className="bg-[#1A1A1A] text-white px-6 py-4 flex justify-between items-center flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="bg-[#C5A059] p-2 rounded-lg text-black">
+                  <IoCubeOutline size={24} />
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none">
+                    Tracking ID
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-mono text-sm font-bold text-white">
+                      {order._id}
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(order._id);
+                        toast.info("Copied!");
+                      }}
+                      className="text-[#C5A059] hover:text-white"
+                    >
+                      <IoCopyOutline size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="text-sm font-bold text-black">
-                Total:{" "}
-                <span className="text-[#cbc3a3]">Rs. {order.amount}</span>
+              <div className="text-right flex items-center gap-4">
+                <div>
+                  <p className="text-[10px] text-gray-400 uppercase font-black">
+                    Ordered On
+                  </p>
+                  <p className="text-sm font-bold">
+                    {new Date(order.date).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => deleteOrder(order._id)}
+                  className="p-3 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                >
+                  <IoTrashOutline size={20} />
+                </button>
               </div>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-5 sm:p-6">
-              {/* Column 1: Items List */}
-              <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                  <IoCubeOutline /> Ordered Items
-                </p>
-                <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 p-8 gap-8">
+              {/* 1. Items */}
+              <div className="space-y-6">
+                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">
+                  Package Content
+                </h3>
+                <div className="space-y-4">
                   {order.items.map((item, i) => (
                     <div
                       key={i}
-                      className="bg-gray-50 p-2 rounded border border-gray-100"
+                      className="flex gap-4 items-center bg-gray-50 p-3 rounded-2xl border border-gray-100"
                     >
-                      <p className="text-xs font-bold text-black">
-                        {item.name}
-                      </p>
-                      <p className="text-[10px] text-gray-500">
-                        Size: {item.size} | Qty: {item.quantity}
-                      </p>
+                      <div className="w-12 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
+                        <img
+                          src={item.image?.[0]}
+                          className="w-full h-full object-cover"
+                          alt=""
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black text-black truncate uppercase">
+                          {item.name}
+                        </p>
+                        <p className="text-[9px] text-[#C5A059] font-bold uppercase">
+                          {item.size} x {item.quantity}
+                        </p>
+                        <p className="text-xs font-bold text-black mt-1">
+                          Rs. {item.price * item.quantity}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Column 2: Customer Identity */}
-              <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                  <IoPersonOutline /> Customer
-                </p>
-                <div className="text-sm">
-                  <p className="font-bold text-black text-base">
+              {/* 2. Address */}
+              <div className="space-y-6 lg:px-8">
+                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">
+                  Consignee Details
+                </h3>
+                <div className="space-y-4">
+                  <p className="text-lg font-black text-black uppercase leading-none">
                     {order.address.firstName} {order.address.lastName}
                   </p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    {order.address.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* Column 3: Shipping & Contact */}
-              <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                  <IoLocationOutline /> Shipping Details
-                </p>
-                <div className="text-xs text-gray-600 leading-relaxed">
-                  <p>{order.address.street}</p>
-                  <p>
-                    {order.address.city}, {order.address.state} -{" "}
-                    {order.address.zipcode}
-                  </p>
-                  <div className="mt-2 flex items-center gap-1 text-black font-medium">
+                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-sm font-medium">
+                    <p className="font-bold text-black">
+                      {order.address.street}
+                    </p>
+                    <p>
+                      {order.address.city}, {order.address.state} -{" "}
+                      {order.address.zipCode}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 bg-[#1A1A1A] p-4 rounded-2xl text-[#C5A059] shadow-md font-mono font-black text-xl">
                     <IoCallOutline /> {order.address.phone}
                   </div>
                 </div>
               </div>
 
-              {/* Column 4: Payment & Status Update */}
-              <div className="flex flex-col gap-4">
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
-                    <IoWalletOutline /> Payment Info
-                  </p>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs">
-                      Method:{" "}
-                      <span className="font-bold">{order.paymentMethod}</span>
-                    </p>
-                    <p className="text-xs">
-                      Status:
+              {/* 3. Billing Summary (ALIGNED) */}
+              <div className="space-y-6 lg:pl-8">
+                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">
+                  Billing Summary
+                </h3>
+                <div className="bg-gray-50 p-6 rounded-[1.5rem] border border-gray-200">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500 font-bold uppercase tracking-widest">
+                        Payment Method
+                      </span>
+                      <span className="text-black font-black uppercase">
+                        {order.paymentMethod}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500 font-bold uppercase tracking-widest">
+                        Payment Status
+                      </span>
                       <span
-                        className={`ml-2 px-2 py-0.5 rounded-full text-[9px] font-bold ${order.payment ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-black ${order.payment ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
                       >
                         {order.payment ? "PAID" : "UNPAID"}
                       </span>
-                    </p>
+                    </div>
+                    <div className="pt-3 border-t border-gray-200 flex justify-between items-baseline">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">
+                        Grand Total
+                      </span>
+                      <span className="text-3xl font-black text-black tracking-tighter">
+                        Rs. {order.amount}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-gray-100 md:border-none md:pt-0">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                    Update Order Status
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                    Order Status
                   </p>
                   <select
                     onChange={(e) => statusHandler(e, order._id)}
                     value={order.status}
-                    className="w-full bg-black text-white p-3 text-xs font-bold tracking-widest outline-none cursor-pointer hover:bg-gray-800 transition-all rounded"
+                    className="w-full bg-white border-2 border-gray-300 p-4 text-xs font-black tracking-[0.1em] rounded-2xl outline-none cursor-pointer focus:border-[#C5A059]"
                   >
-                    <option value="Order Placed">Order Placed</option>
-                    <option value="Packing">Packing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Out for delivery">Out for delivery</option>
-                    <option value="Delivered">Delivered</option>
+                    <option value="Order Placed">ORDER PLACED</option>
+                    <option value="Packed">READY TO SHIP</option>
+                    <option value="Shipped">SHIPPED</option>
+                    <option value="Delivered">DELIVERED</option>
                   </select>
                 </div>
               </div>

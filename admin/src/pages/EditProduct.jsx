@@ -1,28 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { backendUrl } from "../App";
 import { toast } from "react-toastify";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IoCloudUploadOutline } from "react-icons/io5";
 
-const Add = ({ token }) => {
-  const [images, setImages] = useState([false, false, false, false]);
-  const [name, setName] = useState("");
-  const [inspiredBy, setInspiredBy] = useState("");
-  const [shortDescription, setShortDescription] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [discount, setDiscount] = useState("0");
-  const [rating, setRating] = useState("5");
-  const [category, setCategory] = useState("Amber Woody");
-  const [subCategory, setSubCategory] = useState("Men");
-  const [size, setSize] = useState("50ml");
-  const [bestSeller, setBestSeller] = useState(false);
-
-  const [topNotes, setTopNotes] = useState("");
-  const [heartNotes, setHeartNotes] = useState("");
-  const [baseNotes, setBaseNotes] = useState("");
-
+const EditProduct = ({ token }) => {
+  const { state } = useLocation(); // List page se jo data bheja tha wo yahan mil raha hai
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  // States initialized with existing product data
+  const [images, setImages] = useState([false, false, false, false]);
+  const [name, setName] = useState(state?.name || "");
+  const [inspiredBy, setInspiredBy] = useState(state?.inspiredBy || "");
+  const [shortDescription, setShortDescription] = useState(
+    state?.shortDescription || "",
+  );
+  const [description, setDescription] = useState(state?.description || "");
+  const [price, setPrice] = useState(state?.price || "");
+  const [discount, setDiscount] = useState(state?.discount || "0");
+  const [category, setCategory] = useState(state?.category || "Amber Woody");
+  const [subCategory, setSubCategory] = useState(state?.subCategory || "Men");
+  const [rating, setRating] = useState(state?.rating || "5");
+  const [size, setSize] = useState(state?.size || "50ml");
+  const [bestSeller, setBestSeller] = useState(state?.bestSeller || false);
+
+  // Olfactory Notes formatting for input (Array to String)
+  const [topNotes, setTopNotes] = useState(state?.notes?.top?.join(", ") || "");
+  const [heartNotes, setHeartNotes] = useState(
+    state?.notes?.heart?.join(", ") || "",
+  );
+  const [baseNotes, setBaseNotes] = useState(
+    state?.notes?.base?.join(", ") || "",
+  );
 
   const handleImageChange = (index, file) => {
     const newImages = [...images];
@@ -35,6 +46,7 @@ const Add = ({ token }) => {
     setLoading(true);
     try {
       const formData = new FormData();
+      formData.append("id", state._id); // Zaroori hai product pehchanne ke liye
       formData.append("name", name);
       formData.append("inspiredBy", inspiredBy);
       formData.append("shortDescription", shortDescription);
@@ -59,24 +71,14 @@ const Add = ({ token }) => {
       });
 
       const response = await axios.post(
-        backendUrl + "/api/product/add",
+        backendUrl + "/api/product/update",
         formData,
         { headers: { token } },
       );
 
       if (response.data.success) {
-        toast.success("Masterpiece Added Successfully!");
-        setName("");
-        setInspiredBy("");
-        setShortDescription("");
-        setDescription("");
-        setPrice("");
-        setDiscount("0");
-        setRating("5");
-        setImages([false, false, false, false]);
-        setTopNotes("");
-        setHeartNotes("");
-        setBaseNotes("");
+        toast.success("Masterpiece Refined & Updated!");
+        navigate("/list");
       } else {
         toast.error(response.data.message);
       }
@@ -91,7 +93,7 @@ const Add = ({ token }) => {
     <div className="animate-fade-in pb-20 md:pb-10 px-4 md:px-0 bg-[#F9F9F7]">
       <div className="flex flex-col gap-1 mb-8">
         <h2 className="text-3xl font-serif tracking-widest text-[#1A1A1A] uppercase font-bold">
-          Add New Masterpiece
+          Edit Masterpiece
         </h2>
         <div className="h-[3px] w-16 bg-[#C5A059]"></div>
       </div>
@@ -100,10 +102,13 @@ const Add = ({ token }) => {
         onSubmit={onSubmitHandler}
         className="max-w-[1000px] flex flex-col gap-10 text-sm"
       >
-        {/* Visuals Section */}
+        {/* Visuals Section - Previews Existing Images */}
         <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200">
           <p className="text-sm tracking-[0.2em] uppercase mb-6 font-bold text-[#1A1A1A]">
-            Product Visuals
+            Product Visuals{" "}
+            <span className="text-gray-400 normal-case font-medium ml-2">
+              (Click to change)
+            </span>
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             {images.map((img, index) => (
@@ -119,16 +124,15 @@ const Add = ({ token }) => {
                     alt=""
                   />
                 ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <IoCloudUploadOutline
-                      size={30}
-                      className="text-[#1A1A1A]"
-                    />
-                    <span className="text-[10px] font-bold text-[#1A1A1A]">
-                      UPLOAD
-                    </span>
-                  </div>
+                  <img
+                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                    src={state?.image[index]}
+                    alt="existing"
+                  />
                 )}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                  <IoCloudUploadOutline size={24} className="text-white" />
+                </div>
                 <input
                   onChange={(e) => handleImageChange(index, e.target.files[0])}
                   type="file"
@@ -154,8 +158,7 @@ const Add = ({ token }) => {
               <input
                 onChange={(e) => setName(e.target.value)}
                 value={name}
-                className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all text-lg placeholder:text-gray-400"
-                placeholder="e.g. Royal Oud"
+                className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all text-lg"
                 required
               />
             </div>
@@ -166,8 +169,7 @@ const Add = ({ token }) => {
               <input
                 onChange={(e) => setInspiredBy(e.target.value)}
                 value={inspiredBy}
-                className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all text-lg placeholder:text-gray-400"
-                placeholder="e.g. Creed Aventus"
+                className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all text-lg"
                 required
               />
             </div>
@@ -180,8 +182,7 @@ const Add = ({ token }) => {
             <input
               onChange={(e) => setShortDescription(e.target.value)}
               value={shortDescription}
-              className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all placeholder:text-gray-400"
-              placeholder="Elegant, romantic, and purely feminine."
+              className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all"
               required
             />
           </div>
@@ -193,8 +194,7 @@ const Add = ({ token }) => {
             <textarea
               onChange={(e) => setDescription(e.target.value)}
               value={description}
-              className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all min-h-[120px] placeholder:text-gray-400"
-              placeholder="Describe the soul of this fragrance..."
+              className="px-5 py-4 bg-white border-2 border-gray-300 rounded-lg text-black font-bold outline-none focus:border-[#C5A059] transition-all min-h-[120px]"
               required
             />
           </div>
@@ -214,7 +214,6 @@ const Add = ({ token }) => {
                 onChange={(e) => setTopNotes(e.target.value)}
                 value={topNotes}
                 className="px-4 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none focus:border-[#C5A059]"
-                placeholder="Pear Blossom, Red Berries..."
                 required
               />
             </div>
@@ -226,7 +225,6 @@ const Add = ({ token }) => {
                 onChange={(e) => setHeartNotes(e.target.value)}
                 value={heartNotes}
                 className="px-4 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none focus:border-[#C5A059]"
-                placeholder="White Gardenia, Jasmine..."
                 required
               />
             </div>
@@ -238,7 +236,6 @@ const Add = ({ token }) => {
                 onChange={(e) => setBaseNotes(e.target.value)}
                 value={baseNotes}
                 className="px-4 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none focus:border-[#C5A059]"
-                placeholder="Brown Sugar, Patchouli..."
                 required
               />
             </div>
@@ -254,14 +251,13 @@ const Add = ({ token }) => {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-[8px] font-bold uppercase text-gray-400">
-                  Price (Rs)
+                  Price
                 </label>
                 <input
                   onChange={(e) => setPrice(e.target.value)}
                   value={price}
                   type="Number"
-                  className="w-full px-3 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none focus:border-[#C5A059]"
-                  placeholder="2100"
+                  className="w-full px-3 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none"
                   required
                 />
               </div>
@@ -273,8 +269,7 @@ const Add = ({ token }) => {
                   onChange={(e) => setDiscount(e.target.value)}
                   value={discount}
                   type="Number"
-                  className="w-full px-3 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none focus:border-[#C5A059]"
-                  placeholder="10"
+                  className="w-full px-3 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none"
                 />
               </div>
               <div>
@@ -287,7 +282,7 @@ const Add = ({ token }) => {
                   type="Number"
                   min="1"
                   max="5"
-                  className="w-full px-3 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none focus:border-[#C5A059]"
+                  className="w-full px-3 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none"
                 />
               </div>
             </div>
@@ -301,7 +296,7 @@ const Add = ({ token }) => {
               <select
                 onChange={(e) => setCategory(e.target.value)}
                 value={category}
-                className="px-2 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none bg-white focus:border-[#C5A059]"
+                className="px-2 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none bg-white"
               >
                 <option value="Amber Woody">Amber Woody</option>
                 <option value="Floral">Floral</option>
@@ -311,7 +306,7 @@ const Add = ({ token }) => {
               <select
                 onChange={(e) => setSubCategory(e.target.value)}
                 value={subCategory}
-                className="px-2 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none bg-white focus:border-[#C5A059]"
+                className="px-2 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none bg-white"
               >
                 <option value="Men">Men</option>
                 <option value="Women">Women</option>
@@ -320,7 +315,7 @@ const Add = ({ token }) => {
               <select
                 onChange={(e) => setSize(e.target.value)}
                 value={size}
-                className="px-2 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none bg-white focus:border-[#C5A059]"
+                className="px-2 py-3 border-2 border-gray-400 rounded-lg text-black font-bold outline-none bg-white"
               >
                 <option value="50ml">50ml</option>
                 <option value="100ml">100ml</option>
@@ -329,17 +324,26 @@ const Add = ({ token }) => {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full md:w-max px-24 py-5 bg-[#1A1A1A] text-white text-xs tracking-[0.4em] uppercase hover:bg-[#C5A059] hover:text-black transition-all duration-500 shadow-2xl rounded-full font-bold disabled:bg-gray-400"
-        >
-          {loading ? "CRAFTING..." : "PUBLISH MASTERPIECE"}
-        </button>
+        {/* Update Button */}
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 md:flex-none px-24 py-5 bg-[#1A1A1A] text-white text-xs tracking-[0.4em] uppercase hover:bg-[#C5A059] hover:text-black transition-all duration-500 shadow-2xl rounded-full font-bold"
+          >
+            {loading ? "SAVING CHANGES..." : "UPDATE MASTERPIECE"}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/list")}
+            className="px-10 py-5 border-2 border-gray-300 text-black text-xs tracking-[0.4em] uppercase hover:bg-gray-100 transition-all rounded-full font-bold"
+          >
+            CANCEL
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
-export default Add;
+export default EditProduct;

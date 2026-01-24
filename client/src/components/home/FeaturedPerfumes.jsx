@@ -1,10 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AiFillStar } from "react-icons/ai";
-import perfumes from "../../data/perfumes";
+import { useContext } from "react";
+import { CartContext } from "../../context/CartContext"; // Path context ke mutabiq check karlein
 
 export default function FeaturedPerfumes() {
-  const featuredList = perfumes.slice(0, 4);
+  const { products } = useContext(CartContext);
+  const navigate = useNavigate();
+
+  // Logic: Pehle Best Sellers dikhao, agar wo nahi hain toh latest 4 products dikhao
+  const featuredList = products.filter((item) => item.bestSeller).slice(0, 4);
+  const displayList =
+    featuredList.length > 0 ? featuredList : products.slice(0, 4);
 
   return (
     <section className="bg-[#F9F7F2] py-16 md:py-24">
@@ -15,17 +22,27 @@ export default function FeaturedPerfumes() {
           viewport={{ once: true }}
           className="text-center mb-10 md:mb-16"
         >
-          <h2 className="font-serif text-2xl md:text-4xl text-grey tracking-wide uppercase">
+          <h2 className="font-serif text-2xl md:text-4xl text-grey tracking-wide uppercase font-bold">
             Curated Masterpieces
           </h2>
           <div className="h-1 w-20 bg-gold mx-auto mt-4"></div>
         </motion.div>
 
-        {/* Responsive Grid: grid-cols-2 for mobile, grid-cols-4 for desktop */}
+        {/* Responsive Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {featuredList.map((perfume) => (
+          {displayList.map((perfume) => (
             <PerfumeCard key={perfume.id} perfume={perfume} />
           ))}
+        </div>
+
+        {/* Shop All Button for UX */}
+        <div className="mt-12 text-center">
+          <button
+            onClick={() => navigate("/shop")}
+            className="text-[10px] uppercase tracking-[0.3em] font-bold text-gold border-b border-gold pb-1 hover:text-grey hover:border-grey transition-all"
+          >
+            Explore Full Collection
+          </button>
         </div>
       </div>
     </section>
@@ -45,7 +62,7 @@ function PerfumeCard({ perfume }) {
       <AiFillStar
         key={index}
         className={index < rating ? "text-orange-400" : "text-gray-300"}
-        size={10} // Mobile par chota size taake line break na ho
+        size={10}
       />
     ));
   };
@@ -56,7 +73,7 @@ function PerfumeCard({ perfume }) {
       onClick={() => navigate(`/product/${perfume.id}`)}
       className="bg-white p-3 md:p-5 shadow-sm cursor-pointer flex flex-col items-center text-center group relative overflow-hidden transition-all hover:shadow-2xl rounded-xl border border-gold/5"
     >
-      {/* Discount Badge - Smaller on mobile */}
+      {/* Discount Badge */}
       {hasDiscount && (
         <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-red-500 text-white text-[8px] md:text-[10px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded-md z-10 uppercase">
           {perfume.discount}%
@@ -66,14 +83,14 @@ function PerfumeCard({ perfume }) {
       {/* Image Container */}
       <div className="w-full aspect-[4/5] overflow-hidden rounded-lg md:rounded-2xl mb-3 md:mb-5 bg-[#1A1A1A]">
         <motion.img
-          src={perfume.images[0]}
+          src={perfume.images[0]} // Database ki images array se pehli image
           alt={perfume.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
       </div>
 
-      {/* Product Info - Sizes adjusted for 2-column layout */}
-      <h3 className="font-body font-bold text-grey text-[10px] md:text-sm uppercase tracking-widest mb-1 truncate w-full">
+      {/* Info Section */}
+      <h3 className="font-body font-bold text-grey text-[10px] md:text-sm uppercase tracking-widest mb-1 truncate w-full px-1">
         {perfume.name}
       </h3>
 
@@ -81,7 +98,6 @@ function PerfumeCard({ perfume }) {
         {renderStars(perfume.rating)}
       </div>
 
-      {/* Price Section */}
       <div className="mb-4 md:mb-6">
         {hasDiscount ? (
           <div className="flex flex-col items-center leading-tight">
@@ -99,7 +115,6 @@ function PerfumeCard({ perfume }) {
         )}
       </div>
 
-      {/* Button - Smaller on mobile */}
       <button className="w-full md:w-auto bg-grey text-white px-3 md:px-8 py-2 md:py-2.5 rounded-full text-[9px] md:text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-gold hover:text-grey">
         View
       </button>
