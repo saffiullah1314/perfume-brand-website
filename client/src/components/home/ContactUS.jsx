@@ -37,37 +37,17 @@ export default function ContactUs() {
       );
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 1,
-        ease: [0.19, 1, 0.22, 1],
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
   return (
     <section
       id="contact"
-      className="bg-[#FBFBF9] py-16 md:py-24 px-6 md:px-12 lg:px-24 font-body"
+      className="bg-[#FBFBF9] py-16 md:py-24 px-6 md:px-12 lg:px-24 font-body relative"
     >
-      <div className="container-custom max-w-7xl mx-auto">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-          /* items-stretch ensures the left and right cards have equal height on desktop */
-          className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-stretch"
-        >
-          {/* Left Side: Editorial Typography */}
-          <div className="flex flex-col justify-between p-2">
+      <div className="container-custom max-w-7xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-stretch">
+          {/* Left Side */}
+          <div className="flex flex-col justify-between p-2 relative">
             <div className="space-y-6">
-              <span className="text-[14px] md:text-[16px] uppercase tracking-[0.4em] text-[#C5A059] font-bold">
+              <span className="text-[14px] md:text-[16px] uppercase tracking-[0.4em] text-[#C5A059] font-bold block">
                 Connect With Us
               </span>
               <h2 className="font-serif text-3xl md:text-5xl lg:text-5xl text-[#1C1C1C] leading-[1.1] tracking-tight">
@@ -77,40 +57,32 @@ export default function ContactUs() {
                 </span>
               </h2>
 
-              {/* Extra context for perfect vertical alignment */}
               <div className="space-y-4 text-[#636363] max-w-md leading-relaxed text-base md:text-lg font-light">
                 <p>
                   At Roohra, we believe every person has a unique story that
-                  deserves to be told through fragrance. Our master artisans are
-                  ready to help you discover a scent that truly represents who
-                  you are.
-                </p>
-                <p>
-                  Whether you have a question about our collections or you want
-                  to design something completely new, we are here to provide an
-                  exclusive and luxury experience.
+                  deserves to be told through fragrance.
                 </p>
               </div>
             </div>
 
-            {/* Social Icons - Positioned at the bottom of the left column on desktop */}
-            <div className="mt-8 lg:mt-0">
+            {/* Social Icons Section - Added isolation */}
+            <div className="mt-12 lg:mt-0 relative z-[999]">
               <p className="text-[10px] uppercase tracking-widest text-[#C5A059] mb-4 font-bold">
                 Follow Our Journey
               </p>
-              <div className="flex gap-4">
+              <div className="flex gap-4 isolate">
                 <SocialIcon
-                  href={socialLinks.instagram}
+                  url={socialLinks.instagram}
                   icon={<FiInstagram />}
                   label="Instagram"
                 />
                 <SocialIcon
-                  href={socialLinks.whatsapp}
+                  url={socialLinks.whatsapp}
                   icon={<FiMessageCircle />}
                   label="WhatsApp"
                 />
                 <SocialIcon
-                  href={socialLinks.tiktok}
+                  url={socialLinks.tiktok}
                   icon={<FaTiktok />}
                   label="TikTok"
                 />
@@ -118,17 +90,10 @@ export default function ContactUs() {
             </div>
           </div>
 
-          {/* Right Side: The Masterwork Form */}
-          <motion.div
-            variants={containerVariants}
-            className="bg-gold/15 p-8 md:p-12 lg:p-14 rounded-[1.5rem] shadow-[0_30px_90px_rgba(0,0,0,0.04)] border border-gold flex flex-col justify-center"
-          >
-            <form
-              ref={form}
-              onSubmit={sendEmail}
-              className="space-y-6 lg:space-y-8"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          {/* Right Side: Form */}
+          <div className="bg-[#F3F2EE] p-8 md:p-12 lg:p-14 rounded-[1.5rem] shadow-sm border border-[#C5A059]/20 flex flex-col justify-center relative z-10">
+            <form ref={form} onSubmit={sendEmail} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputField
                   label="Full Name"
                   name="from_name"
@@ -142,7 +107,6 @@ export default function ContactUs() {
                   placeholder="john@example.com"
                 />
               </div>
-
               <InputField
                 label="Subject"
                 name="subject"
@@ -159,30 +123,44 @@ export default function ContactUs() {
                   rows="5"
                   required
                   placeholder="How may we assist you today?"
-                  className="bg-[#FCFBFA] border border-gold/40 rounded-2xl p-5 text-sm text-[#1C1C1C] focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all duration-500 placeholder:text-[#C2C2C2] resize-none hover:border-gold"
+                  className="bg-white border border-[#C5A059]/40 rounded-2xl p-5 text-sm outline-none focus:border-[#C5A059] transition-all"
                 ></textarea>
               </div>
 
-              <div className="mt-2">
-                <GoldButton type="submit" className="w-full">
-                  Send Inquiry
-                </GoldButton>
-              </div>
-
+              <GoldButton type="submit" className="w-full">
+                Send Inquiry
+              </GoldButton>
               {status && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center text-[10px] font-bold text-[#C5A059] uppercase tracking-[0.2em] mt-4"
-                >
+                <p className="text-center text-[10px] font-bold text-[#C5A059] mt-4 uppercase tracking-widest">
                   {status}
-                </motion.p>
+                </p>
               )}
             </form>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+// Fixed SocialIcon Component
+function SocialIcon({ url, icon, label }) {
+  const handleClick = (e) => {
+    e.preventDefault(); // Default behavior rokhne ke liye
+    e.stopPropagation(); // Event bubbling (parent #contact tak jana) rokhne ke liye
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      type="button"
+      className="w-12 h-12 md:w-14 md:h-14 bg-white border border-[#EEECE7] rounded-full text-[#1C1C1C] flex items-center justify-center hover:bg-[#1C1C1C] hover:text-white transition-all duration-300 shadow-sm cursor-pointer relative z-[1000]"
+      style={{ pointerEvents: "auto" }}
+      aria-label={label}
+    >
+      <span className="text-xl pointer-events-none">{icon}</span>
+    </button>
   );
 }
 
@@ -197,22 +175,8 @@ function InputField({ label, name, type, placeholder }) {
         name={name}
         required
         placeholder={placeholder}
-        className="bg-[#FCFBFA] border border-gold/40 rounded-xl px-6 py-4 text-sm text-[#1C1C1C] focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all duration-500 placeholder:text-[#C2C2C2] hover:border-gold"
+        className="bg-white border border-[#C5A059]/40 rounded-xl px-6 py-4 text-sm outline-none focus:border-[#C5A059] transition-all"
       />
     </div>
-  );
-}
-
-function SocialIcon({ href, icon, label }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-12 h-12 md:w-14 md:h-14 bg-white border border-[#EEECE7] rounded-full text-[#1C1C1C] flex items-center justify-center hover:bg-[#1C1C1C] hover:text-white hover:border-[#1C1C1C] transition-all duration-700 shadow-sm"
-      aria-label={label}
-    >
-      <span className="text-lg">{icon}</span>
-    </a>
   );
 }

@@ -10,6 +10,7 @@ import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
 import ProductDetail from "./pages/ProductDetail";
 import PlaceOrder from "./pages/PlaceOrder";
+import ScrollToTop from "./components/ScrollToTop"; // Yeh raha import
 import Success from "./pages/Success";
 
 function App() {
@@ -17,6 +18,9 @@ function App() {
     <CartProvider>
       <Toaster position="bottom-right" reverseOrder={false} />
       <MainLayout>
+        {/* YAHAN ADD KAREIN: Routes se pehle */}
+        <ScrollToTop />
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
