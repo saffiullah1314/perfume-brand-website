@@ -4,10 +4,11 @@ import {
   IoAddCircleOutline,
   IoListOutline,
   IoBagHandleOutline,
-  IoCubeOutline,
+  IoFlaskOutline, // Custom Requests ke liye naya icon
 } from "react-icons/io5";
 
-const Sidebar = ({ orderCount = 2 }) => {
+const Sidebar = ({ orderCount = 0 }) => {
+  // Yahan maine "Custom Requests" ko navItems mein shamil kar diya hai
   const navItems = [
     { name: "Add Items", path: "/add", icon: <IoAddCircleOutline size={22} /> },
     { name: "List Items", path: "/list", icon: <IoListOutline size={22} /> },
@@ -16,6 +17,11 @@ const Sidebar = ({ orderCount = 2 }) => {
       path: "/orders",
       icon: <IoBagHandleOutline size={22} />,
       badge: true,
+    },
+    {
+      name: "Custom Requests",
+      path: "/custom-requests",
+      icon: <IoFlaskOutline size={22} />,
     },
   ];
 
@@ -39,12 +45,15 @@ const Sidebar = ({ orderCount = 2 }) => {
             {/* Animated Background on Hover/Active */}
             <span className="absolute inset-0 bg-[#cbc3a3]/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></span>
 
-            {/* Active Indicator Line */}
-            <span
-              className={({ isActive }) =>
-                `absolute left-0 w-[2px] h-0 bg-black transition-all duration-500 ${isActive ? "h-full" : ""}`
-              }
-            ></span>
+            {/* Active Indicator Line - Fixed logic */}
+            <div className="absolute left-0 w-[2px] h-full transition-all duration-500">
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive ? "block h-full bg-black" : "hidden"
+                }
+              ></NavLink>
+            </div>
 
             <div className="relative z-10 flex items-center gap-4">
               <span className="group-hover:scale-110 transition-transform duration-300">
@@ -83,16 +92,20 @@ const Sidebar = ({ orderCount = 2 }) => {
                 <span className="absolute top-0 right-0 h-2 w-2 bg-red-600 rounded-full border border-white"></span>
               )}
             </div>
+            {/* Small screen par text name short kar diya */}
             <span className="text-[8px] uppercase tracking-tighter font-medium">
               {item.name.split(" ")[0]}
             </span>
 
             {/* Mobile Active Underline */}
-            <span
-              className={({ isActive }) =>
-                `h-[2px] bg-black transition-all duration-300 ${isActive ? "w-4 mt-1" : "w-0"}`
-              }
-            ></span>
+            <div className="h-[2px] w-full flex justify-center mt-1">
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive ? "w-4 h-full bg-black rounded-full" : "w-0"
+                }
+              ></NavLink>
+            </div>
           </NavLink>
         ))}
       </div>

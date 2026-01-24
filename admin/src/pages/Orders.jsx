@@ -7,18 +7,16 @@ import {
   IoPersonOutline,
   IoLocationOutline,
   IoCallOutline,
-  IoWalletOutline,
   IoCalendarOutline,
   IoTrashOutline,
   IoCopyOutline,
+  IoMailOutline,
 } from "react-icons/io5";
 
 const Orders = ({ token }) => {
   const [orders, setOrders] = useState([]);
   const [orderCount, setOrderCount] = useState(0);
   const audioPlayer = useRef(null);
-
-  // Sound Notification URL (Aap apni pasand ki short mp3 file yahan daal sakte hain)
   const notificationSound =
     "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
 
@@ -32,17 +30,10 @@ const Orders = ({ token }) => {
       );
       if (response.data.success) {
         const fetchedOrders = response.data.orders.reverse();
-
-        // Agar naye orders aaye hain toh sound bajao (First load par nahi bajega)
         if (!isFirstLoad && fetchedOrders.length > orderCount) {
-          audioPlayer.current
-            .play()
-            .catch((err) =>
-              console.log("Audio play blocked by browser settings."),
-            );
+          audioPlayer.current?.play().catch(() => {});
           toast.info("New Order Received! 🔔");
         }
-
         setOrders(fetchedOrders);
         setOrderCount(fetchedOrders.length);
       }
@@ -51,8 +42,24 @@ const Orders = ({ token }) => {
     }
   };
 
+  const openGmailWeb = (order) => {
+    const itemsList = order.items
+      .map(
+        (item) => `- ${item.name} (${item.size || "50ml"}) x ${item.quantity}`,
+      )
+      .join("\n");
+    const subject = encodeURIComponent(
+      `Order Confirmation - ROOHRA - ID: ${order._id.slice(-6)}`,
+    );
+    const body = encodeURIComponent(
+      `Dear ${order.address.firstName},\n\nYour order from ROOHRA has been received!\n\n--- ORDER SUMMARY ---\nTracking ID: ${order._id}\nItems:\n${itemsList}\nTotal Amount: Rs. ${order.amount}\n\n--- SHIPPING TO ---\n${order.address.street}, ${order.address.city}\nPhone: ${order.address.phone}\n\nStay Fragrant,\nTeam ROOHRA`,
+    );
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${order.address.email}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, "_blank");
+  };
+
   const deleteOrder = async (orderId) => {
-    if (window.confirm("Confirm delete this order record?")) {
+    if (window.confirm("Delete order record?")) {
       try {
         const response = await axios.post(
           backendUrl + "/api/order/remove",
@@ -60,7 +67,7 @@ const Orders = ({ token }) => {
           { headers: { token } },
         );
         if (response.data.success) {
-          toast.success("Order Removed");
+          toast.success("Order Deleted");
           fetchAllOrders(true);
         }
       } catch (error) {
@@ -86,99 +93,85 @@ const Orders = ({ token }) => {
   };
 
   useEffect(() => {
-    fetchAllOrders(true); // Pehli baar load karte waqt sound nahi bajega
-
-    // Auto-refresh every 30 seconds to check for new orders
-    const interval = setInterval(() => {
-      fetchAllOrders(false);
-    }, 30000);
-
+    fetchAllOrders(true);
+    const interval = setInterval(() => fetchAllOrders(false), 30000);
     return () => clearInterval(interval);
   }, [token, orderCount]);
 
   return (
-    <div className="animate-fade-in pb-20 px-4">
-      {/* Hidden Audio Element */}
+    <div className="animate-fade-in pb-20 px-2 sm:px-4 text-left font-sans max-w-[1400px] mx-auto">
       <audio ref={audioPlayer} src={notificationSound} />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-        <div>
-          <h2 className="text-3xl font-serif tracking-widest text-[#1A1A1A] uppercase font-bold">
-            Dispatch Center
-          </h2>
-          <div className="h-[3px] w-20 bg-[#C5A059] mt-1"></div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></span>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Live Monitoring Active
-          </p>
-        </div>
+      <div className="mb-8 mt-4">
+        <h2 className="text-2xl sm:text-3xl font-serif tracking-widest text-[#1A1A1A] uppercase font-bold">
+          Dispatch Center
+        </h2>
+        <div className="h-[3px] w-16 bg-[#C5A059] mt-1"></div>
       </div>
 
-      <div className="flex flex-col gap-10">
-        {orders.map((order, index) => (
+      <div className="flex flex-col gap-6 sm:gap-10">
+        {orders.map((order) => (
           <div
-            key={index}
-            className="bg-white border-2 border-gray-200 rounded-[1.5rem] overflow-hidden shadow-lg hover:border-[#C5A059] transition-all"
+            key={order._id}
+            className="bg-white border border-gray-200 rounded-2xl sm:rounded-[1.5rem] overflow-hidden shadow-md hover:shadow-xl transition-all"
           >
-            {/* Header */}
-            <div className="bg-[#1A1A1A] text-white px-6 py-4 flex justify-between items-center flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-[#C5A059] p-2 rounded-lg text-black">
-                  <IoCubeOutline size={24} />
+            {/* Header - Fully Responsive Stack on Mobile */}
+            <div className="bg-[#1A1A1A] text-white px-4 py-4 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="bg-[#C5A059] p-1.5 rounded text-black shrink-0">
+                  <IoCubeOutline size={20} />
                 </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none">
+                <div className="min-w-0">
+                  <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">
                     Tracking ID
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono text-sm font-bold text-white">
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="font-mono text-xs font-bold text-white truncate">
                       {order._id}
                     </p>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(order._id);
-                        toast.info("Copied!");
+                        toast.info("ID Copied!");
                       }}
-                      className="text-[#C5A059] hover:text-white"
+                      className="text-[#C5A059] shrink-0"
                     >
-                      <IoCopyOutline size={18} />
+                      <IoCopyOutline size={16} />
                     </button>
                   </div>
                 </div>
               </div>
-              <div className="text-right flex items-center gap-4">
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase font-black">
-                    Ordered On
-                  </p>
-                  <p className="text-sm font-bold">
-                    {new Date(order.date).toLocaleString()}
-                  </p>
-                </div>
+
+              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t border-white/10 sm:border-none pt-3 sm:pt-0">
+                <button
+                  onClick={() => openGmailWeb(order)}
+                  className="flex items-center gap-2 bg-[#C5A059] text-black px-3 py-2 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-md shrink-0"
+                >
+                  <IoMailOutline size={14} /> Gmail
+                </button>
                 <button
                   onClick={() => deleteOrder(order._id)}
-                  className="p-3 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                  className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg border border-red-500/20 shrink-0"
                 >
-                  <IoTrashOutline size={20} />
+                  <IoTrashOutline size={18} />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 p-8 gap-8">
-              {/* 1. Items */}
-              <div className="space-y-6">
-                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">
+            {/* Content Body - 1 Column Mobile, 3 Columns Desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
+              {/* Package Content */}
+              <div className="p-4 sm:p-6 lg:p-8 space-y-4">
+                <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
                   Package Content
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {order.items.map((item, i) => (
                     <div
                       key={i}
-                      className="flex gap-4 items-center bg-gray-50 p-3 rounded-2xl border border-gray-100"
+                      className="flex gap-3 items-center bg-gray-50 p-3 rounded-xl border border-gray-100"
                     >
-                      <div className="w-12 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
+                      <div className="w-12 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                         <img
                           src={item.image?.[0]}
                           className="w-full h-full object-cover"
@@ -190,10 +183,10 @@ const Orders = ({ token }) => {
                           {item.name}
                         </p>
                         <p className="text-[9px] text-[#C5A059] font-bold uppercase">
-                          {item.size} x {item.quantity}
+                          {item.size || "50ml"} x {item.quantity}
                         </p>
                         <p className="text-xs font-bold text-black mt-1">
-                          Rs. {item.price * item.quantity}
+                          Rs. {(item.price * item.quantity).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -201,74 +194,80 @@ const Orders = ({ token }) => {
                 </div>
               </div>
 
-              {/* 2. Address */}
-              <div className="space-y-6 lg:px-8">
-                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">
+              {/* Consignee Section */}
+              <div className="p-4 sm:p-6 lg:p-8 space-y-4">
+                <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
                   Consignee Details
                 </h3>
                 <div className="space-y-4">
-                  <p className="text-lg font-black text-black uppercase leading-none">
-                    {order.address.firstName} {order.address.lastName}
-                  </p>
-                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-sm font-medium">
-                    <p className="font-bold text-black">
+                  <div>
+                    <p className="text-lg font-black text-black uppercase leading-tight">
+                      {order.address.firstName} {order.address.lastName}
+                    </p>
+                    <p className="text-[11px] font-bold text-[#C5A059] mt-1 break-all">
+                      {order.address.email}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-xs sm:text-sm">
+                    <p className="font-bold text-black leading-snug">
                       {order.address.street}
                     </p>
-                    <p>
+                    <p className="font-medium text-gray-600 mt-1">
                       {order.address.city}, {order.address.state} -{" "}
                       {order.address.zipCode}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 bg-[#1A1A1A] p-4 rounded-2xl text-[#C5A059] shadow-md font-mono font-black text-xl">
-                    <IoCallOutline /> {order.address.phone}
+                  <div className="flex items-center gap-3 bg-[#1A1A1A] p-3 rounded-xl text-[#C5A059] font-mono font-black text-lg sm:text-xl">
+                    <IoCallOutline />{" "}
+                    <span className="tracking-tighter">
+                      {order.address.phone}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* 3. Billing Summary (ALIGNED) */}
-              <div className="space-y-6 lg:pl-8">
-                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">
-                  Billing Summary
+              {/* Financial Section - Fixed Size & Alignment */}
+              <div className="p-4 sm:p-6 lg:p-8 space-y-4">
+                <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
+                  Financial & Status
                 </h3>
-                <div className="bg-gray-50 p-6 rounded-[1.5rem] border border-gray-200">
+                <div className="bg-[#1A1A1A] p-5 rounded-2xl border-b-4 border-[#C5A059]">
                   <div className="space-y-3">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 font-bold uppercase tracking-widest">
-                        Payment Method
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-gray-400 font-bold uppercase tracking-widest">
+                        Payment
                       </span>
-                      <span className="text-black font-black uppercase">
+                      <span className="text-white font-black uppercase">
                         {order.paymentMethod}
                       </span>
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 font-bold uppercase tracking-widest">
-                        Payment Status
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-gray-400 font-bold uppercase tracking-widest">
+                        Status
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[9px] font-black ${order.payment ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                        className={`px-2 py-0.5 rounded-full font-black ${order.payment ? "bg-green-500 text-white" : "bg-orange-500 text-white"}`}
                       >
                         {order.payment ? "PAID" : "UNPAID"}
                       </span>
                     </div>
-                    <div className="pt-3 border-t border-gray-200 flex justify-between items-baseline">
-                      <span className="text-[10px] font-black text-gray-400 uppercase">
+                    <div className="pt-3 border-t border-white/10 flex justify-between items-center">
+                      <span className="text-[9px] font-black text-[#C5A059] uppercase">
                         Grand Total
                       </span>
-                      <span className="text-3xl font-black text-black tracking-tighter">
-                        Rs. {order.amount}
+                      {/* Size reduced from 3xl to xl */}
+                      <span className="text-xl font-black text-white tracking-tight leading-none">
+                        Rs.{order.amount.toLocaleString()}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-                    Order Status
-                  </p>
+                <div className="pt-2">
                   <select
                     onChange={(e) => statusHandler(e, order._id)}
                     value={order.status}
-                    className="w-full bg-white border-2 border-gray-300 p-4 text-xs font-black tracking-[0.1em] rounded-2xl outline-none cursor-pointer focus:border-[#C5A059]"
+                    className="w-full bg-white border border-gray-300 p-3.5 text-[10px] font-black tracking-widest rounded-xl cursor-pointer hover:border-[#C5A059] outline-none"
                   >
                     <option value="Order Placed">ORDER PLACED</option>
                     <option value="Packed">READY TO SHIP</option>

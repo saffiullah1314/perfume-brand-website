@@ -1,6 +1,7 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import mongoose from "mongoose";
+import customModel from "../models/customModel.js";
 
 // 1. Placing Order (Same as yours, fixed GUEST userId)
 const placeOrder = async (req, res) => {
@@ -102,7 +103,56 @@ const removeOrder = async (req, res) => {
   }
 };
 
-// Export mein shamil karein
+const placeCustomRequest = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      targetBrand,
+      specialRequest,
+      bottleSize,
+      intensity,
+    } = req.body;
+    const requestData = {
+      name,
+      email,
+      phone,
+      targetBrand,
+      specialRequest,
+      bottleSize,
+      intensity,
+      date: Date.now(),
+    };
+    const newRequest = new customModel(requestData);
+    await newRequest.save();
+    res.json({ success: true, message: "Request Submitted Successfully" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Admin ke liye list dekhne ka function
+const listCustomRequests = async (req, res) => {
+  try {
+    const requests = await customModel.find({});
+    res.json({ success: true, requests });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+// Naya function: Custom Request delete karne ke liye
+const removeCustomRequest = async (req, res) => {
+  try {
+    const { id } = req.body;
+    await customModel.findByIdAndDelete(id);
+    res.json({ success: true, message: "Inquiry Deleted Successfully" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Export mein shamil karein (Existing exports ke sath)
 export {
   placeOrder,
   allOrders,
@@ -110,4 +160,7 @@ export {
   updateStatus,
   orderStatus,
   removeOrder,
+  placeCustomRequest,
+  listCustomRequests,
+  removeCustomRequest, // <--- Add this
 };
